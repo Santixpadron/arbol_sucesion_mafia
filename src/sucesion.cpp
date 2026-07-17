@@ -1,9 +1,6 @@
 #include "sucesion.h"
 
-/* -----------------------------------------------------------
- *  Utilidades internas
- * --------------------------------------------------------- */
-
+// Obtiene el hermano de un nodo en el arbol
 static Miembro *obtener_hermano(Miembro *raiz, Miembro *nodo) {
     Miembro *padre = encontrar_padre(raiz, nodo->id);
     if (!padre) return NULL;
@@ -15,6 +12,7 @@ static Miembro *obtener_hermano(Miembro *raiz, Miembro *nodo) {
     return NULL;
 }
 
+// Busca el primer sucesor vivo y libre entre los hijos
 static Miembro *buscar_sucesor_en_hijos(Miembro *nodo) {
     if (!nodo) return NULL;
 
@@ -31,6 +29,7 @@ static Miembro *buscar_sucesor_en_hijos(Miembro *nodo) {
     return NULL;
 }
 
+// Busca el primer sucesor vivo (incluyendo presos) entre los hijos
 static Miembro *buscar_sucesor_en_hijos_preso(Miembro *nodo) {
     if (!nodo) return NULL;
 
@@ -47,10 +46,7 @@ static Miembro *buscar_sucesor_en_hijos_preso(Miembro *nodo) {
     return NULL;
 }
 
-/* -----------------------------------------------------------
- *  Mostrar linea de sucesion
- * --------------------------------------------------------- */
-
+// Imprime la sucesion recursivamente (solo vivos)
 static void imprimir_sucesion_recursivo(Miembro *nodo, int nivel) {
     if (!nodo) return;
     if (nodo->esta_muerto) {
@@ -86,10 +82,7 @@ void mostrar_linea_sucesion(Miembro *raiz) {
     cout << "========================================" << endl << endl;
 }
 
-/* -----------------------------------------------------------
- *  Asignacion del nuevo jefe
- * --------------------------------------------------------- */
-
+// Transfiere la jefatura de un miembro a otro
 static void transferir_jefatura(Miembro *viejo_jefe, Miembro *nuevo_jefe) {
     if (viejo_jefe) {
         viejo_jefe->es_jefe = 0;
@@ -106,26 +99,26 @@ static void transferir_jefatura(Miembro *viejo_jefe, Miembro *nuevo_jefe) {
 void asignar_nuevo_jefe(Miembro *raiz, Miembro *jefe_anterior) {
     Miembro *nuevo = NULL;
 
-    /* Regla 1: Buscar primer sucesor vivo y libre en el subarbol del jefe */
+    // Regla 1: buscar sucesor vivo y libre en hijos del jefe
     nuevo = buscar_sucesor_en_hijos(jefe_anterior);
     if (nuevo) {
         transferir_jefatura(jefe_anterior, nuevo);
         return;
     }
 
-    /* Regla 2-4: Buscar en el arbol del hermano del jefe */
+    // Regla 2-4: buscar en el arbol del hermano
     Miembro *padre = encontrar_padre(raiz, jefe_anterior->id);
     if (padre) {
         Miembro *hermano = obtener_hermano(raiz, jefe_anterior);
         if (hermano) {
-            /* Regla 3: Si el hermano esta vivo, libre y sin sucesores -> el es jefe */
+            // Regla 3: hermano vivo, libre y sin sucesores
             if (!hermano->esta_muerto && !hermano->en_carcel &&
                 !hermano->izq && !hermano->der) {
                 transferir_jefatura(jefe_anterior, hermano);
                 return;
             }
 
-            /* Regla 2: Buscar primer sucesor vivo y libre en el arbol del hermano */
+            // Regla 2: sucesor vivo y libre en arbol del hermano
             nuevo = primer_sucesor_vivo_libre(hermano);
             if (nuevo) {
                 transferir_jefatura(jefe_anterior, nuevo);
@@ -133,7 +126,7 @@ void asignar_nuevo_jefe(Miembro *raiz, Miembro *jefe_anterior) {
             }
         }
 
-        /* Regla 4-5: Subir por el arbol buscando un ancestro con sucesores disponibles */
+        // Regla 4-5: subir buscando ancestros con sucesores
         Miembro *ancestro = padre;
         while (ancestro) {
             Miembro *hermano_ancestro = obtener_hermano(raiz, ancestro);
@@ -149,7 +142,7 @@ void asignar_nuevo_jefe(Miembro *raiz, Miembro *jefe_anterior) {
         }
     }
 
-    /* Regla 6: Si no hay sucesores libres, buscar entre presos vivos */
+    // Regla 6: buscar entre presos vivos
     nuevo = buscar_sucesor_en_hijos_preso(jefe_anterior);
     if (nuevo) {
         transferir_jefatura(jefe_anterior, nuevo);
@@ -180,7 +173,7 @@ void asignar_nuevo_jefe(Miembro *raiz, Miembro *jefe_anterior) {
         }
     }
 
-    /* Ultimo recurso: buscar en todo el arbol */
+    // Ultimo recurso: buscar en todo el arbol
     nuevo = primer_sucesor_vivo_libre(raiz);
     if (!nuevo) {
         nuevo = primer_sucesor_vivo(raiz);
@@ -192,10 +185,6 @@ void asignar_nuevo_jefe(Miembro *raiz, Miembro *jefe_anterior) {
              << endl << endl;
     }
 }
-
-/* -----------------------------------------------------------
- *  Eventos
- * --------------------------------------------------------- */
 
 void procesar_muerte(Miembro *raiz, int id) {
     Miembro *miembro = buscar_por_id(raiz, id);

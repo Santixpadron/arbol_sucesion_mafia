@@ -186,7 +186,7 @@ int main() {
 
     cout << "Arbol cargado exitosamente. " << contar_vivos(raiz) << " miembros vivos." << endl;
 
-    /* Verificar edad del jefe al inicio */
+    // Verificar edad del jefe al inicio
     verificar_edad_jefe(raiz);
 
     int opcion;

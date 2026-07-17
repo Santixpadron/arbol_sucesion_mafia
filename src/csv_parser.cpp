@@ -5,6 +5,7 @@ struct NodoPendiente {
     NodoPendiente *sig;
 };
 
+// Escribe un nodo y sus hijos al archivo CSV
 static void escribir_nodo_csv(ofstream &f, Miembro *nodo) {
     if (!nodo) return;
 
@@ -17,6 +18,7 @@ static void escribir_nodo_csv(ofstream &f, Miembro *nodo) {
     escribir_nodo_csv(f, nodo->der);
 }
 
+// Intenta insertar nodos pendientes en el arbol
 static void intentar_insertar_pendientes(Miembro *raiz, NodoPendiente *&pendientes) {
     bool insertado_alguno = true;
     while (insertado_alguno) {
@@ -56,7 +58,7 @@ Miembro *cargar_csv(const char *ruta) {
     bool es_cabecera = true;
 
     while (getline(f, linea)) {
-        /* Eliminar retorno de carro si existe */
+        // Eliminar retorno de carro
         if (!linea.empty() && linea.back() == '\r') {
             linea.pop_back();
         }
@@ -67,7 +69,7 @@ Miembro *cargar_csv(const char *ruta) {
             continue;
         }
 
-        /* Parsear con stringstream */
+        // Parsear campos con stringstream
         stringstream ss(linea);
         string token;
 
@@ -117,7 +119,7 @@ Miembro *cargar_csv(const char *ruta) {
             intentar_insertar_pendientes(raiz, pendientes);
         } else {
             if (raiz && insertar_miembro(raiz, nuevo)) {
-                /* Insertado correctamente */
+                // Insertado correctamente
             } else {
                 NodoPendiente *pend = new NodoPendiente();
                 pend->miembro = nuevo;
@@ -129,12 +131,12 @@ Miembro *cargar_csv(const char *ruta) {
 
     f.close();
 
-    /* Intentar insertar los pendientes restantes */
+    // Insertar pendientes restantes
     if (raiz && pendientes) {
         intentar_insertar_pendientes(raiz, pendientes);
     }
 
-    /* Liberar pendientes que no se pudieron insertar */
+    // Liberar pendientes que no se pudieron insertar
     while (pendientes) {
         NodoPendiente *temp = pendientes;
         cout << "Advertencia: No se pudo insertar a " << temp->miembro->nombre

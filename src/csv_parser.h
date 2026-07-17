@@ -5,10 +5,10 @@
 #include <fstream>
 #include <sstream>
 
-/* Cargar el arbol desde un archivo CSV. Retorna la raiz del arbol. */
+// Cargar el arbol desde un archivo CSV
 Miembro *cargar_csv(const char *ruta);
 
-/* Guardar el arbol de vuelta al CSV */
+// Guardar el arbol al CSV
 void guardar_csv(const char *ruta, Miembro *raiz);
 
 #endif
