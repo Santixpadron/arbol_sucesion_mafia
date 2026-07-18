@@ -6,13 +6,26 @@
 
 using namespace std;
 
+// Lee un entero desde la terminal de forma segura protegiendo contra entradas no validas
+static int leer_entero(const char *mensaje) {
+    int valor;
+    while (true) {
+        cout << mensaje;
+        if (cin >> valor) {
+            cin.ignore(10000, '\n'); // Limpiar caracteres residuales en la linea
+            return valor;
+        } else {
+            cout << "Error: Entrada invalida. Por favor, ingrese un numero entero." << endl;
+            cin.clear();
+            cin.ignore(10000, '\n'); // Descartar el resto de la linea invalida
+        }
+    }
+}
+
 #define RUTA_CSV "bin/familia.csv"
 
 static void modificar_miembro(Miembro *raiz) {
-    int id;
-    cout << "Ingrese el ID del miembro a modificar: ";
-    cin >> id;
-    cin.ignore();
+    int id = leer_entero("Ingrese el ID del miembro a modificar: ");
 
     Miembro *m = buscar_por_id(raiz, id);
     if (!m) {
@@ -34,10 +47,8 @@ static void modificar_miembro(Miembro *raiz) {
     cout << endl << "Nota: No se puede modificar el ID (" << m->id
          << ") ni el ID del jefe (" << m->id_jefe << ")." << endl;
 
-    int opcion;
-    cout << endl << "Que campo desea modificar? ";
-    cin >> opcion;
-    cin.ignore();
+    cout << endl;
+    int opcion = leer_entero("Que campo desea modificar? ");
 
     switch (opcion) {
         case 1: {
@@ -74,10 +85,7 @@ static void modificar_miembro(Miembro *raiz) {
             break;
         }
         case 4: {
-            int edad;
-            cout << "Nueva edad: ";
-            cin >> edad;
-            cin.ignore();
+            int edad = leer_entero("Nueva edad: ");
             if (edad > 0 && edad < 150) {
                 m->edad = edad;
                 cout << "Edad actualizada a " << m->edad << "." << endl;
@@ -90,10 +98,7 @@ static void modificar_miembro(Miembro *raiz) {
             break;
         }
         case 5: {
-            int val;
-            cout << "Esta muerto? (0=No, 1=Si): ";
-            cin >> val;
-            cin.ignore();
+            int val = leer_entero("Esta muerto? (0=No, 1=Si): ");
             if (val == 0 || val == 1) {
                 if (val == 1 && !m->esta_muerto) {
                     procesar_muerte(raiz, m->id);
@@ -105,10 +110,7 @@ static void modificar_miembro(Miembro *raiz) {
             break;
         }
         case 6: {
-            int val;
-            cout << "En carcel? (0=No, 1=Si): ";
-            cin >> val;
-            cin.ignore();
+            int val = leer_entero("En carcel? (0=No, 1=Si): ");
             if (val == 1 && !m->en_carcel) {
                 procesar_encarcelamiento(raiz, m->id);
             } else if (val == 0 && m->en_carcel) {
@@ -117,10 +119,7 @@ static void modificar_miembro(Miembro *raiz) {
             break;
         }
         case 7: {
-            int val;
-            cout << "Fue jefe? (0=No, 1=Si): ";
-            cin >> val;
-            cin.ignore();
+            int val = leer_entero("Fue jefe? (0=No, 1=Si): ");
             if (val == 0 || val == 1) {
                 m->fue_jefe = val;
                 cout << "Estado actualizado." << endl;
@@ -128,10 +127,7 @@ static void modificar_miembro(Miembro *raiz) {
             break;
         }
         case 8: {
-            int val;
-            cout << "Es jefe? (0=No, 1=Si): ";
-            cin >> val;
-            cin.ignore();
+            int val = leer_entero("Es jefe? (0=No, 1=Si): ");
             if (val == 0 || val == 1) {
                 m->es_jefe = val;
                 cout << "Estado actualizado." << endl;
@@ -147,10 +143,7 @@ static void modificar_miembro(Miembro *raiz) {
 }
 
 static void buscar_miembro_menu(Miembro *raiz) {
-    int id;
-    cout << "Ingrese el ID del miembro a buscar: ";
-    cin >> id;
-    cin.ignore();
+    int id = leer_entero("Ingrese el ID del miembro a buscar: ");
 
     Miembro *m = buscar_por_id(raiz, id);
     if (!m) {
@@ -205,9 +198,7 @@ int main() {
         cout << "  8. Guardar datos al CSV" << endl;
         cout << "  0. Salir" << endl;
         cout << "============================================" << endl;
-        cout << "Seleccione una opcion: ";
-        cin >> opcion;
-        cin.ignore();
+        opcion = leer_entero("Seleccione una opcion: ");
 
         switch (opcion) {
             case 1:
@@ -222,26 +213,17 @@ int main() {
                 cout << "========================================" << endl;
                 break;
             case 3: {
-                int id;
-                cout << "Ingrese el ID del miembro que murio: ";
-                cin >> id;
-                cin.ignore();
+                int id = leer_entero("Ingrese el ID del miembro que murio: ");
                 procesar_muerte(raiz, id);
                 break;
             }
             case 4: {
-                int id;
-                cout << "Ingrese el ID del miembro a encarcelar: ";
-                cin >> id;
-                cin.ignore();
+                int id = leer_entero("Ingrese el ID del miembro a encarcelar: ");
                 procesar_encarcelamiento(raiz, id);
                 break;
             }
             case 5: {
-                int id;
-                cout << "Ingrese el ID del miembro a liberar: ";
-                cin >> id;
-                cin.ignore();
+                int id = leer_entero("Ingrese el ID del miembro a liberar: ");
                 procesar_liberacion(raiz, id);
                 break;
             }
