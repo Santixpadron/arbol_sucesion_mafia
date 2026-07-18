@@ -45,6 +45,18 @@ static void intentar_insertar_pendientes(Miembro *raiz, NodoPendiente *&pendient
     }
 }
 
+// Busca si un ID ya esta registrado en la lista de pendientes
+static bool buscar_en_pendientes(NodoPendiente *pendientes, int id) {
+    NodoPendiente *actual = pendientes;
+    while (actual) {
+        if (actual->miembro && actual->miembro->id == id) {
+            return true;
+        }
+        actual = actual->sig;
+    }
+    return false;
+}
+
 Miembro *cargar_csv(const char *ruta) {
     ifstream f(ruta);
     if (!f.is_open()) {
@@ -109,12 +121,25 @@ Miembro *cargar_csv(const char *ruta) {
         if (!getline(ss, token, ',')) continue;
         es_jefe = atoi(token.c_str());
 
+        // Validar si el ID ya existe en el arbol o pendientes
+        if ((raiz && buscar_por_id(raiz, id)) || buscar_en_pendientes(pendientes, id)) {
+            cout << "Error: ID duplicado detectado en CSV: " << id 
+                 << " (" << nombre << " " << apellido << "). Ignorando registro." << endl;
+            continue;
+        }
+
         Miembro *nuevo = crear_miembro(id, nombre, apellido, genero,
                                        edad, id_jefe, esta_muerto, en_carcel,
                                        fue_jefe, es_jefe);
         if (!nuevo) continue;
 
         if (id_jefe == 0) {
+            if (raiz != NULL) {
+                cout << "Error: Se detecto un segundo jefe de familia con ID " << id 
+                     << " (" << nombre << " " << apellido << "). Solo se permite un jefe supremo (id_jefe = 0)." << endl;
+                delete nuevo;
+                continue;
+            }
             raiz = nuevo;
             intentar_insertar_pendientes(raiz, pendientes);
         } else {
@@ -137,15 +162,21 @@ Miembro *cargar_csv(const char *ruta) {
     }
 
     // Liberar pendientes que no se pudieron insertar
-    while (pendientes) {
-        NodoPendiente *temp = pendientes;
-        cout << "Advertencia: No se pudo insertar a " << temp->miembro->nombre
-             << " " << temp->miembro->apellido
-             << " (id:" << temp->miembro->id
-             << ", id_jefe:" << temp->miembro->id_jefe << ")" << endl;
-        delete temp->miembro;
-        pendientes = temp->sig;
-        delete temp;
+    if (pendientes) {
+        if (!raiz) {
+            cout << "Error critico: No se encontro un jefe de familia principal (con id_jefe = 0)." << endl;
+        } else {
+            cout << "Error de Consistencia CSV: Se detectaron miembros del arbol que no pudieron insertarse." << endl;
+            cout << "Esto se debe a que su jefe (id_jefe) no existe o forma una relacion circular (bucle):" << endl;
+        }
+        while (pendientes) {
+            NodoPendiente *temp = pendientes;
+            cout << "  - " << temp->miembro->nombre << " " << temp->miembro->apellido
+                 << " (ID: " << temp->miembro->id << ", ID Jefe: " << temp->miembro->id_jefe << ")" << endl;
+            delete temp->miembro;
+            pendientes = temp->sig;
+            delete temp;
+        }
     }
 
     return raiz;
